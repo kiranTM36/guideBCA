@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Resources</title>
+  <style>
+    /* Basic Styling */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f0fb;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #1a1f2c;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-5px);
+    }
+
+    .card h3 {
+      font-size: 1.5rem;
+      color: #1a1f2c;
+    }
+
+    .notes-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .note {
+      flex: 1 1 calc(33.33% - 20px);
+      max-width: 33.33%;
+    }
+
+    @media (max-width: 768px) {
+      .note {
+        flex: 1 1 calc(50% - 20px);
+        max-width: 50%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .note {
+        flex: 1 1 100%;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Study Resources</h1>
+
+    <div class="notes-container" id="notesContainer">
+      <!-- Notes will be displayed here dynamically -->
+    </div>
+  </div>
+
+  <script>
+    // Notes data with only titles
+    const notes = [
+      {
+        id: 1,
+        title: "Semester 1",
+        link: "sem.html"
+      },
+      {
+        id: 2,
+        title: "Semester 2",
+        link: "sem2.html"
+      }
+    ];
+
+    const notesContainer = document.getElementById('notesContainer');
+
+    // Display notes
+    function displayNotes() {
+      notesContainer.innerHTML = '';
+      notes.forEach(note => {
+        const noteElement = document.createElement('div');
+        noteElement.classList.add('note');
+        noteElement.classList.add('card');
+        noteElement.innerHTML = `
+          <h3>${note.title}</h3>
+        `;
+        noteElement.onclick = () => {
+          window.location.href = note.link;
+        };
+        notesContainer.appendChild(noteElement);
+      });
+    }
+
+    displayNotes();
+  </script>
+
+</body>
+
+</html>

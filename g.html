@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Logic Gate Simulator</title>
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --light-bg: #f8f9fa;
+      --dark-bg: #343a40;
+      --success-color: #28a745;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light-bg);
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    header, footer {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    header h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+    
+    .container {
+      display: flex;
+      min-height: calc(100vh - 120px);
+    }
+    
+    #toolbox {
+      width: 220px;
+      background: var(--dark-bg);
+      padding: 1rem;
+      color: white;
+      overflow-y: auto;
+    }
+    
+    .toolbox-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .toolbox-section h3 {
+      color: var(--secondary-color);
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid #555;
+      padding-bottom: 0.3rem;
+    }
+    
+    .toolbox-btn {
+      display: block;
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    
+    .toolbox-btn:hover {
+      background-color: #2980b9;
+      transform: translateX(5px);
+    }
+    
+    #canvas {
+      flex-grow: 1;
+      height: calc(100vh - 120px);
+      position: relative;
+      background-color: white;
+      overflow: hidden;
+      border-left: 1px solid #ddd;
+    }
+    
+    .gate {
+      position: absolute;
+      border: 2px solid var(--primary-color);
+      background-color: white;
+      padding: 0.8rem;
+      cursor: move;
+      text-align: center;
+      width: 120px;
+      min-height: 80px;
+      border-radius: 6px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      z-index: 10;
+      user-select: none;
+      resize: both;
+      overflow: hidden;
+    }
+    
+    .gate-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: var(--primary-color);
+    }
+    
+    .input-output {
+      background-color: #e8f5e9;
+      border-color: #2e7d32;
+    }
+    
+    .value-control {
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .value-btn {
+      padding: 0.3rem 0.6rem;
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .output-value {
+      font-weight: bold;
+      color: var(--accent-color);
+    }
+    
+    .connector {
+      width: 12px;
+      height: 12px;
+      background: #7f8c8d;
+      position: absolute;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+      transition: all 0.2s;
+      z-index: 20;
+    }
+    
+    .connector:hover {
+      transform: scale(1.3);
+    }
+    
+    .input-connector {
+      background-color: var(--success-color);
+      left: -6px;
+    }
+    
+    .input-connector-a {
+      top: 30%;
+    }
+    
+    .input-connector-b {
+      top: 70%;
+    }
+    
+    .output-connector {
+      background-color: var(--accent-color);
+      right: -6px;
+      top: 50%;
+    }
+    
+    .active-connector {
+      background-color: var(--secondary-color);
+      transform: scale(1.3);
+      box-shadow: 0 0 5px var(--secondary-color);
+    }
+    
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+    }
+    
+    .wire {
+      stroke: var(--primary-color);
+      stroke-width: 2;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      background-color: var(--dark-bg);
+      color: white;
+    }
+    
+    .control-btn {
+      padding: 0.5rem 1rem;
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .control-btn:hover {
+      background-color: #c0392b;
+    }
+    
+    .delete-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .gate:hover .delete-btn {
+      opacity: 1;
+    }
+    
+    .resize-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--secondary-color);
+      right: 0;
+      bottom: 0;
+      cursor: se-resize;
+      z-index: 20;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .gate:hover .resize-handle {
+      opacity: 0.5;
+    }
+    
+    .gate:hover .resize-handle:hover {
+      opacity: 1;
+    }
+    
+    footer {
+      padding: 0.8rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Advanced Logic Gate Simulator</h1>
+  </header>
+  
+  <div class="controls">
+    <button class="control-btn" onclick="calculateCircuit()">Calculate Circuit</button>
+    <button class="control-btn" onclick="clearCanvas()">Clear Canvas</button>
+  </div>
+  
+  <div class="container">
+    <div id="toolbox">
+      <div class="toolbox-section">
+        <h3>Inputs/Outputs</h3>
+        <button class="toolbox-btn" onclick="addGate('INPUT')">Input Source</button>
+        <button class="toolbox-btn" onclick="addGate('OUTPUT')">Output Display</button>
+      </div>
+      
+      <div class="toolbox-section">
+        <h3>Basic Gates</h3>
+        <button class="toolbox-btn" onclick="addGate('AND')">AND Gate</button>
+        <button class="toolbox-btn" onclick="addGate('OR')">OR Gate</button>
+        <button class="toolbox-btn" onclick="addGate('NOT')">NOT Gate</button>
+      </div>
+      
+      <div class="toolbox-section">
+        <h3>Composite Gates</h3>
+        <button class="toolbox-btn" onclick="addGate('NAND')">NAND Gate</button>
+        <button class="toolbox-btn" onclick="addGate('NOR')">NOR Gate</button>
+        <button class="toolbox-btn" onclick="addGate('XOR')">XOR Gate</button>
+        <button class="toolbox-btn" onclick="addGate('XNOR')">XNOR Gate</button>
+      </div>
+    </div>
+    
+    <div id="canvas">
+      <svg id="wires"></svg>
+    </div>
+  </div>
+  
+  <footer>
+    <p>&copy; 2025 LogicSim Pro. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // DOM Elements
+    const canvas = document.getElementById('canvas');
+    const wiresSVG = document.getElementById('wires');
+    
+    // App State
+    let gateIdCounter = 0;
+    let selectedConnector = null;
+    let gates = {};
+    let connections = [];
+    let isResizing = false;
+    let resizingGate = null;
+    let startX, startY, startWidth, startHeight;
+    
+    // Add a new gate to the canvas
+    function addGate(type) {
+      const gate = document.createElement('div');
+      gate.className = 'gate';
+      gate.id = `gate-${gateIdCounter}`;
+      gate.dataset.type = type;
+      
+      // Position gate randomly but within visible area
+      const maxX = canvas.clientWidth - 150;
+      const maxY = canvas.clientHeight - 100;
+      const posX = Math.max(20, Math.min(maxX, Math.random() * maxX));
+      const posY = Math.max(20, Math.min(maxY, Math.random() * maxY));
+      
+      gate.style.left = `${posX}px`;
+      gate.style.top = `${posY}px`;
+      
+      // Gate title
+      const title = document.createElement('div');
+      title.className = 'gate-title';
+      title.textContent = type;
+      gate.appendChild(title);
+      
+      // Add specific elements based on gate type
+      if (type === 'INPUT') {
+        gate.classList.add('input-output');
+        
+        const valueControl = document.createElement('div');
+        valueControl.className = 'value-control';
+        
+        const valueBtn = document.createElement('button');
+        valueBtn.className = 'value-btn';
+        valueBtn.textContent = 'Toggle (0)';
+        valueBtn.dataset.value = '0';
+        valueBtn.onclick = function() {
+          this.dataset.value = this.dataset.value === '0' ? '1' : '0';
+          this.textContent = `Toggle (${this.dataset.value})`;
+        };
+        
+        valueControl.appendChild(valueBtn);
+        gate.appendChild(valueControl);
+        
+        // Only add output connector for INPUT gates
+        const outputConnector = document.createElement('div');
+        outputConnector.className = 'connector output-connector';
+        outputConnector.dataset.gateId = gate.id;
+        outputConnector.dataset.type = 'output';
+        gate.appendChild(outputConnector);
+      }
+      else if (type === 'OUTPUT') {
+        gate.classList.add('input-output');
+        
+        const outputDisplay = document.createElement('div');
+        outputDisplay.className = 'output-value';
+        outputDisplay.textContent = 'Output: ?';
+        gate.appendChild(outputDisplay);
+        
+        // Only add input connector for OUTPUT gates
+        const inputConnector = document.createElement('div');
+        inputConnector.className = 'connector input-connector';
+        inputConnector.dataset.gateId = gate.id;
+        inputConnector.dataset.type = 'input';
+        gate.appendChild(inputConnector);
+      }
+      else if (type === 'NOT') {
+        // NOT gate has one input and one output
+        const inputConnector = document.createElement('div');
+        inputConnector.className = 'connector input-connector';
+        inputConnector.dataset.gateId = gate.id;
+        inputConnector.dataset.type = 'input';
+        gate.appendChild(inputConnector);
+        
+        const outputConnector = document.createElement('div');
+        outputConnector.className = 'connector output-connector';
+        outputConnector.dataset.gateId = gate.id;
+        outputConnector.dataset.type = 'output';
+        gate.appendChild(outputConnector);
+      }
+      else {
+        // All other gates have two inputs and one output
+        const inputConnectorA = document.createElement('div');
+        inputConnectorA.className = 'connector input-connector input-connector-a';
+        inputConnectorA.dataset.gateId = gate.id;
+        inputConnectorA.dataset.type = 'input';
+        inputConnectorA.dataset.pin = 'A';
+        gate.appendChild(inputConnectorA);
+        
+        const inputConnectorB = document.createElement('div');
+        inputConnectorB.className = 'connector input-connector input-connector-b';
+        inputConnectorB.dataset.gateId = gate.id;
+        inputConnectorB.dataset.type = 'input';
+        inputConnectorB.dataset.pin = 'B';
+        gate.appendChild(inputConnectorB);
+        
+        const outputConnector = document.createElement('div');
+        outputConnector.className = 'connector output-connector';
+        outputConnector.dataset.gateId = gate.id;
+        outputConnector.dataset.type = 'output';
+        gate.appendChild(outputConnector);
+      }
+      
+      // Add delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.innerHTML = '×';
+      deleteBtn.onclick = function(e) {
+        e.stopPropagation();
+        deleteGate(gate.id);
+      };
+      gate.appendChild(deleteBtn);
+      
+      // Add resize handle
+      const resizeHandle = document.createElement('div');
+      resizeHandle.className = 'resize-handle';
+      resizeHandle.addEventListener('mousedown', startResize);
+      gate.appendChild(resizeHandle);
+      
+      // Add to DOM and make draggable
+      canvas.appendChild(gate);
+      makeDraggable(gate);
+      
+      // Add event listeners to connectors
+      const connectors = gate.querySelectorAll('.connector');
+      connectors.forEach(conn => {
+        conn.addEventListener('click', handleConnectorClick);
+      });
+      
+      // Store gate in our state
+      gates[gate.id] = {
+        id: gate.id,
+        type,
+        element: gate,
+        inputs: {},
+        output: null
+      };
+      
+      gateIdCounter++;
+    }
+    
+    // Handle connector clicks for creating wires
+    function handleConnectorClick(e) {
+      e.stopPropagation();
+      const connector = e.target;
+      
+      // If no connector is selected, select this one
+      if (!selectedConnector) {
+        selectedConnector = connector;
+        connector.classList.add('active-connector');
+        return;
+      }
+      
+      // If clicking the same connector, deselect it
+      if (selectedConnector === connector) {
+        selectedConnector.classList.remove('active-connector');
+        selectedConnector = null;
+        return;
+      }
+      
+      // Check if we're connecting input to output (not input to input or output to output)
+      if (selectedConnector.dataset.type !== connector.dataset.type) {
+        // Determine which is input and which is output
+        let outputConn, inputConn;
+        if (selectedConnector.dataset.type === 'output') {
+          outputConn = selectedConnector;
+          inputConn = connector;
+        } else {
+          outputConn = connector;
+          inputConn = selectedConnector;
+        }
+        
+        // Create the connection
+        createConnection(outputConn, inputConn);
+      }
+      
+      // Reset selection
+      selectedConnector.classList.remove('active-connector');
+      selectedConnector = null;
+    }
+    
+    // Create a visual wire and logical connection
+    function createConnection(outputConn, inputConn) {
+      // Get gate elements
+      const outputGateId = outputConn.dataset.gateId;
+      const inputGateId = inputConn.dataset.gateId;
+      
+      // Check if connection already exists
+      const existingConnection = connections.find(conn => 
+        conn.outputGateId === outputGateId && conn.inputGateId === inputGateId
+      );
+      
+      if (existingConnection) return;
+      
+      // Create SVG line for the wire
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.classList.add("wire");
+      line.dataset.outputGate = outputGateId;
+      line.dataset.inputGate = inputGateId;
+      
+      // Store reference to update position later
+      const wire = {
+        element: line,
+        outputGateId,
+        inputGateId,
+        inputPin: inputConn.dataset.pin || 'A', // Default to 'A' if no pin specified
+        outputConn,
+        inputConn
+      };
+      
+      // Update wire positions
+      updateWirePosition(wire);
+      
+      // Add to SVG
+      wiresSVG.appendChild(line);
+      
+      // Store connection in our state
+      connections.push(wire);
+      
+      // Update gate inputs
+      if (!gates[inputGateId].inputs) gates[inputGateId].inputs = {};
+      gates[inputGateId].inputs[wire.inputPin] = wire;
+    }
+    
+    // Update wire position based on gate positions
+    function updateWirePosition(wire) {
+      const outputRect = wire.outputConn.getBoundingClientRect();
+      const inputRect = wire.inputConn.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+      
+      const x1 = outputRect.left + outputRect.width / 2 - canvasRect.left;
+      const y1 = outputRect.top + outputRect.height / 2 - canvasRect.top;
+      const x2 = inputRect.left + inputRect.width / 2 - canvasRect.left;
+      const y2 = inputRect.top + inputRect.height / 2 - canvasRect.top;
+      
+      wire.element.setAttribute("x1", x1);
+      wire.element.setAttribute("y1", y1);
+      wire.element.setAttribute("x2", x2);
+      wire.element.setAttribute("y2", y2);
+    }
+    
+    // Make gates draggable
+    function makeDraggable(gate) {
+      let isDragging = false;
+      let offsetX, offsetY;
+      
+      gate.addEventListener('mousedown', (e) => {
+        // Don't drag if clicking on a connector, button, or resize handle
+        if (e.target.classList.contains('connector')) return;
+        if (e.target.tagName === 'BUTTON') return;
+        if (e.target.classList.contains('resize-handle')) return;
+        
+        isDragging = true;
+        offsetX = e.offsetX;
+        offsetY = e.offsetY;
+        gate.style.zIndex = 1000;
+        e.preventDefault();
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (isResizing && resizingGate) {
+          const width = startWidth + e.clientX - startX;
+          const height = startHeight + e.clientY - startY;
+          
+          // Minimum size constraints
+          const minWidth = 100;
+          const minHeight = 60;
+          
+          resizingGate.style.width = Math.max(minWidth, width) + 'px';
+          resizingGate.style.height = Math.max(minHeight, height) + 'px';
+          
+          // Update all connected wires
+          updateConnectedWires(resizingGate.id);
+          return;
+        }
+        
+        if (isDragging) {
+          const rect = canvas.getBoundingClientRect();
+          let newLeft = e.clientX - rect.left - offsetX;
+          let newTop = e.clientY - rect.top - offsetY;
+          
+          // Constrain to canvas boundaries
+          newLeft = Math.max(0, Math.min(canvas.clientWidth - gate.offsetWidth, newLeft));
+          newTop = Math.max(0, Math.min(canvas.clientHeight - gate.offsetHeight, newTop));
+          
+          gate.style.left = newLeft + 'px';
+          gate.style.top = newTop + 'px';
+          
+          // Update all connected wires
+          updateConnectedWires(gate.id);
+        }
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        isResizing = false;
+        resizingGate = null;
+        gate.style.zIndex = 10;
+      });
+    }
+    
+    // Start resizing a gate
+    function startResize(e) {
+      e.stopPropagation();
+      isResizing = true;
+      resizingGate = e.target.parentElement;
+      startX = e.clientX;
+      startY = e.clientY;
+      startWidth = parseInt(document.defaultView.getComputedStyle(resizingGate).width, 10);
+      startHeight = parseInt(document.defaultView.getComputedStyle(resizingGate).height, 10);
+    }
+    
+    // Update positions of all wires connected to a gate
+    function updateConnectedWires(gateId) {
+      connections.forEach(conn => {
+        if (conn.outputGateId === gateId || conn.inputGateId === gateId) {
+          updateWirePosition(conn);
+        }
+      });
+    }
+    
+    // Delete a specific gate
+    function deleteGate(gateId) {
+      if (!confirm('Delete this gate and all its connections?')) return;
+      
+      const gate = gates[gateId];
+      if (!gate) return;
+      
+      // Remove all wires connected to this gate
+      connections = connections.filter(wire => {
+        if (wire.outputGateId === gateId || wire.inputGateId === gateId) {
+          document.getElementById(wire.element.id)?.remove();
+          return false;
+        }
+        return true;
+      });
+      
+      // Remove the gate element
+      if (gate.element.parentNode) {
+        gate.element.parentNode.removeChild(gate.element);
+      }
+      
+      // Remove from state
+      delete gates[gateId];
+    }
+    
+    // Calculate the output of a single gate
+    function calculateGateOutput(gateId) {
+      const gate = gates[gateId];
+      if (!gate) return null;
+      
+      // For input gates, just return their set value
+      if (gate.type === 'INPUT') {
+        const valueBtn = gate.element.querySelector('.value-btn');
+        return valueBtn ? parseInt(valueBtn.dataset.value) : 0;
+      }
+      
+      // For output gates, calculate based on their input
+      if (gate.type === 'OUTPUT') {
+        // Find the wire connected to this gate's input
+        const inputWire = Object.values(gate.inputs)[0];
+        if (!inputWire) return null;
+        
+        // Get the output value from the connected gate
+        return calculateGateOutput(inputWire.outputGateId);
+      }
+      
+      // For NOT gate (special case with one input)
+      if (gate.type === 'NOT') {
+        const inputWire = Object.values(gate.inputs)[0];
+        if (!inputWire) return null;
+        
+        const inputValue = calculateGateOutput(inputWire.outputGateId);
+        if (inputValue === null) return null;
+        
+        return inputValue === 1 ? 0 : 1;
+      }
+      
+      // For all other gates (two inputs)
+      const inputValues = {};
+      Object.keys(gate.inputs).forEach(inputPin => {
+        const inputWire = gate.inputs[inputPin];
+        inputValues[inputPin] = calculateGateOutput(inputWire.outputGateId);
+      });
+      
+      // If we don't have all inputs, return null (unknown)
+      if (Object.keys(inputValues).length !== 2 || inputValues['A'] === null || inputValues['B'] === null) {
+        return null;
+      }
+      
+      const a = inputValues['A'];
+      const b = inputValues['B'];
+      
+      // Calculate based on gate type using standard truth tables
+      switch(gate.type) {
+        case 'AND':
+          return a && b ? 1 : 0;
+        case 'OR':
+          return a || b ? 1 : 0;
+        case 'NAND':
+          return !(a && b) ? 1 : 0;
+        case 'NOR':
+          return !(a || b) ? 1 : 0;
+        case 'XOR':
+          return (a ^ b) ? 1 : 0;
+        case 'XNOR':
+          return !(a ^ b) ? 1 : 0;
+        default:
+          return null;
+      }
+    }
+    
+    // Calculate the entire circuit
+    function calculateCircuit() {
+      // First calculate all gate outputs
+      Object.keys(gates).forEach(gateId => {
+        const gate = gates[gateId];
+        gate.output = calculateGateOutput(gateId);
+        
+        // Update visual display for output gates
+        if (gate.type === 'OUTPUT') {
+          const outputDisplay = gate.element.querySelector('.output-value');
+          if (outputDisplay) {
+            outputDisplay.textContent = gate.output !== null ? 
+              `Output: ${gate.output}` : 'Output: ?';
+            outputDisplay.style.color = gate.output === 1 ? '#27ae60' : '#e74c3c';
+          }
+        }
+      });
+      
+      // Highlight gates based on their output
+      Object.keys(gates).forEach(gateId => {
+        const gate = gates[gateId];
+        if (gate.output !== null) {
+          gate.element.style.borderColor = gate.output === 1 ? 
+            '#27ae60' : '#e74c3c';
+        } else {
+          gate.element.style.borderColor = '#2c3e50';
+        }
+      });
+    }
+    
+    // Clear the entire canvas
+    function clearCanvas() {
+      if (!confirm('Are you sure you want to clear the canvas? All gates and connections will be removed.')) {
+        return;
+      }
+      
+      // Remove all gates
+      Object.keys(gates).forEach(gateId => {
+        const gate = gates[gateId].element;
+        if (gate.parentNode) {
+          gate.parentNode.removeChild(gate);
+        }
+      });
+      
+      // Clear SVG
+      while (wiresSVG.firstChild) {
+        wiresSVG.removeChild(wiresSVG.firstChild);
+      }
+      
+      // Reset state
+      gates = {};
+      connections = [];
+      gateIdCounter = 0;
+      selectedConnector = null;
+    }
+  </script>
+</body>
+</html>
